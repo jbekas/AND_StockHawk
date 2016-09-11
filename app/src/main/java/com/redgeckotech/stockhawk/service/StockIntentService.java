@@ -1,15 +1,21 @@
-package com.sam_chordas.android.stockhawk.service;
+package com.redgeckotech.stockhawk.service;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gms.gcm.TaskParams;
+import com.redgeckotech.stockhawk.StockHawkApplication;
+import com.redgeckotech.stockhawk.events.RxBus;
+
+import javax.inject.Inject;
 
 /**
  * Created by sam_chordas on 10/1/15.
  */
 public class StockIntentService extends IntentService {
+
+  @Inject RxBus rxBus;
 
   public StockIntentService(){
     super(StockIntentService.class.getName());
@@ -20,6 +26,9 @@ public class StockIntentService extends IntentService {
   }
 
   @Override protected void onHandleIntent(Intent intent) {
+
+    ((StockHawkApplication) getApplicationContext()).getApplicationComponent().inject(this);
+
     Log.d(StockIntentService.class.getSimpleName(), "Stock Intent Service");
     StockTaskService stockTaskService = new StockTaskService(this);
     Bundle args = new Bundle();
