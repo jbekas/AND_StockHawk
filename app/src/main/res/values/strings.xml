@@ -5,11 +5,18 @@
 
   <string name="action_settings">Settings</string>
   <string name="action_change_units">Change Units</string>
+  <string name="show_percent_change">Show Percentage Change</string>
+  <string name="show_value_change">Show Value Change</string>
   <string name="symbol_search">Symbol Search</string>
   <string name="content_test">Search for a Stock Symbol</string>
   <string name="input_hint">FB</string>
-  <string name="input_prefill"></string>
+  <string name="input_prefill" translatable="false">""</string>
   <string name="network_toast">Uh-oh! This app requires an internet connection</string>
 
   <string name="symbol_not_found">"Symbol not found: %1$s"</string>
+  <string name="add_stock_symbol">Add Stock Symbol</string>
+  <string name="stock_already_saved">This stock is already saved!</string>
+  <string name="stock_symbol">"Stock symbol %1$s"</string>
+  <string name="current_value_is">"Current value is %1$s"</string>
+  <string name="amount_changed_is">"Amount changed is %1$s"</string>
 </resources>

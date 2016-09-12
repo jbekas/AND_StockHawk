@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -66,6 +67,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private Context mContext;
     private Cursor mCursor;
     boolean isConnected;
+
+    private MenuItem changeUnitsMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +131,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                             new String[]{input.toString()}, null);
                                     if (c.getCount() != 0) {
                                         Toast toast =
-                                                Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
+                                                Toast.makeText(MyStocksActivity.this, R.string.stock_already_saved,
                                                         Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                         toast.show();
@@ -148,6 +151,12 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
             }
         });
+
+        // Accessibility, add the FAB to navigation after the toolbar.
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            fab.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+            fab.setAccessibilityTraversalBefore(R.id.recycler_view);
+        }
 
         ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter);
         mItemTouchHelper = new ItemTouchHelper(callback);
@@ -221,6 +230,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.my_stocks, menu);
+
+        // Change button title for accessibility.
+        changeUnitsMenuItem = menu.findItem(R.id.action_change_units);
+        changeUnitsMenuItem.setTitle(Utils.showPercent ? R.string.show_value_change : R.string.show_percent_change);
+
         restoreActionBar();
         return true;
     }
@@ -240,6 +254,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         if (id == R.id.action_change_units) {
             // this is for changing stock changes from percent value to dollar value
             Utils.showPercent = !Utils.showPercent;
+            changeUnitsMenuItem.setTitle(Utils.showPercent ? R.string.show_value_change : R.string.show_percent_change);
             this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
         }
 
