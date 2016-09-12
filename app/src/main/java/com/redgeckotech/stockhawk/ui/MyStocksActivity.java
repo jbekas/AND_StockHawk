@@ -50,6 +50,8 @@ import timber.log.Timber;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static final String SERVICE_INTENT_INITIALIZED = "SERVICE_INTENT_INITIALIZED";
+
     @Inject RxBus rxBus;
 
     private Subscription symbolNotFoundSubscription;
@@ -62,7 +64,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
-    private Intent mServiceIntent;
     private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
@@ -84,6 +85,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mContext = this;
 
         ((StockHawkApplication) getApplicationContext()).getApplicationComponent().inject(this);
+
+        if (savedInstanceState != null) {
+            serviceIntentInitialized = savedInstanceState.getBoolean(SERVICE_INTENT_INITIALIZED, false);
+        }
 
         setContentView(R.layout.activity_my_stocks);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -142,9 +147,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                         return;
                                     } else {
                                         // Add the stock to DB
-                                        mServiceIntent.putExtra("tag", "add");
-                                        mServiceIntent.putExtra("symbol", input.toString());
-                                        startService(mServiceIntent);
+                                        Intent serviceIntent = new Intent(MyStocksActivity.this, StockIntentService.class);
+                                        serviceIntent.putExtra("tag", "add");
+                                        serviceIntent.putExtra("symbol", input.toString());
+                                        startService(serviceIntent);
                                     }
                                 }
                             })
@@ -177,10 +183,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     public void onResume() {
         super.onResume();
-
-        if (mServiceIntent == null) {
-            mServiceIntent = new Intent(this, StockIntentService.class);
-        }
 
         init();
 
@@ -231,6 +233,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBoolean(SERVICE_INTENT_INITIALIZED, serviceIntentInitialized);
+    }
+
     public void init() {
         checkNetworkStatus();
         initStockIntentService();
@@ -255,8 +264,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             if (!serviceIntentInitialized) {
                 Timber.d("starting service intent.");
 
-                mServiceIntent.putExtra("tag", "init");
-                startService(mServiceIntent);
+                Intent serviceIntent = new Intent(MyStocksActivity.this, StockIntentService.class);
+                serviceIntent.putExtra("tag", "init");
+                startService(serviceIntent);
 
                 serviceIntentInitialized = true;
             }
