@@ -24,4 +24,5 @@
 
   <!-- Widget -->
   <string name="set_background_resource" translatable="false">setBackgroundResource</string>
+  <string name="please_check_your_network_settings_and_try_again">Please enable a wifi or cellular network and restart Stock Hawk.</string>
 </resources>

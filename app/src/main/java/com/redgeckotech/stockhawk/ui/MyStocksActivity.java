@@ -20,6 +20,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -66,9 +67,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
     private Cursor mCursor;
-    boolean isConnected;
+    private boolean isConnected;
+    private boolean serviceIntentInitialized;
 
     private MenuItem changeUnitsMenuItem;
+
+    private RecyclerView recyclerView;
+    private FloatingActionButton fab;
+    private TextView networkNotAvailable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,28 +83,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
         ((StockHawkApplication) getApplicationContext()).getApplicationComponent().inject(this);
 
-        ConnectivityManager cm =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
         setContentView(R.layout.activity_my_stocks);
-        // The intent service is for executing immediate pulls from the Yahoo API
-        // GCMTaskService can only schedule tasks, they cannot execute immediately
-        mServiceIntent = new Intent(this, StockIntentService.class);
-        if (savedInstanceState == null) {
-            // Run the initialize task service so that some stocks appear upon an empty database
-            mServiceIntent.putExtra("tag", "init");
-            if (isConnected) {
-                startService(mServiceIntent);
-            } else {
-                networkToast();
-            }
-        }
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
         mCursorAdapter = new QuoteCursorAdapter(this, null);
         recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
@@ -118,7 +105,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         recyclerView.setAdapter(mCursorAdapter);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.attachToRecyclerView(recyclerView);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,6 +145,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             }
         });
 
+        networkNotAvailable = (TextView) findViewById(R.id.network_not_available);
+
         // Accessibility, add the FAB to navigation after the toolbar.
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             fab.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
@@ -169,6 +158,23 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mItemTouchHelper.attachToRecyclerView(recyclerView);
 
         mTitle = getTitle();
+
+        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mServiceIntent == null) {
+            mServiceIntent = new Intent(this, StockIntentService.class);
+        }
+
+        checkNetworkStatus();
+        initStockIntentService();
+        updateUI();
+
         if (isConnected) {
             long period = 3600L;
             long flex = 10L;
@@ -188,12 +194,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             // are updated.
             GcmNetworkManager.getInstance(this).schedule(periodicTask);
         }
-    }
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
 
         symbolNotFoundSubscription = rxBus.register(SymbolNotFoundEvent.class, new Action1<SymbolNotFoundEvent>() {
             @Override
@@ -220,6 +220,49 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         if (symbolNotFoundSubscription != null) {
             symbolNotFoundSubscription.unsubscribe();
         }
+    }
+
+    public void checkNetworkStatus() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+    }
+
+    public void initStockIntentService() {
+        // The intent service is for executing immediate pulls from the Yahoo API
+        // GCMTaskService can only schedule tasks, they cannot execute immediately
+
+        // Run the initialize task service so that some stocks appear upon an empty database
+        if (isConnected) {
+            if (!serviceIntentInitialized) {
+                Timber.d("starting service intent.");
+
+                mServiceIntent.putExtra("tag", "init");
+                startService(mServiceIntent);
+
+                serviceIntentInitialized = true;
+            }
+        } else {
+            networkToast();
+        }
+    }
+
+    public void updateUI() {
+        if (mCursor == null || mCursor.getCount() == 0) {
+            if (!isConnected) {
+                recyclerView.setVisibility(View.GONE);
+                fab.setVisibility(View.GONE);
+                networkNotAvailable.setVisibility(View.VISIBLE);
+                return;
+            }
+        }
+
+        recyclerView.setVisibility(View.VISIBLE);
+        fab.setVisibility(View.VISIBLE);
+        networkNotAvailable.setVisibility(View.GONE);
     }
 
     public void networkToast() {
@@ -286,6 +329,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCursorAdapter.swapCursor(data);
         mCursor = data;
+
+        checkNetworkStatus();
+        initStockIntentService();
+        updateUI();
     }
 
     @Override
