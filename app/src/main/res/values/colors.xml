@@ -11,5 +11,6 @@
   <color name="md_red_500">#d50000</color>
   <color name="md_red_900">#b71c1c</color>
   <color name="black">#000000</color>
+  <color name="white">#ffffff</color>
 
 </resources>

@@ -33,7 +33,8 @@
         </activity>
         <activity
             android:name=".ui.StockDetailsActivity"
-            android:label="@string/stock_details"/>
+            android:label="@string/stock_details"
+            android:parentActivityName=".ui.MyStocksActivity"/>
 
         <service
             android:name=".service.StockTaskService"
@@ -57,6 +58,20 @@
             android:name="com.redgeckotech.stockhawk.data.generated.QuoteProvider"
             android:authorities="com.redgeckotech.stockhawk.data.QuoteProvider"
             android:exported="false"/>
+
+        <receiver android:name=".widget.StockHawkWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/stockhawk_widget_info"/>
+        </receiver>
+
+        <service
+            android:name=".widget.StockHawkRemoteViewsService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
     </application>
 
 </manifest>

@@ -21,4 +21,7 @@
   <string name="stock_symbol">"Stock symbol %1$s"</string>
   <string name="current_value_is">"Current value is %1$s"</string>
   <string name="amount_changed_is">"Amount changed is %1$s"</string>
+
+  <!-- Widget -->
+  <string name="set_background_resource" translatable="false">setBackgroundResource</string>
 </resources>
