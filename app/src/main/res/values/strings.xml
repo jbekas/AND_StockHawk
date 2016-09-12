@@ -1,5 +1,6 @@
 <resources>
   <string name="app_name">Stock Hawk</string>
+  <string name="stock_details">Stock Details</string>
 
   <string name="action_example">Example action</string>
 
@@ -12,6 +13,7 @@
   <string name="input_hint">FB</string>
   <string name="input_prefill" translatable="false">""</string>
   <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+  <string name="error">Uh-oh! Please try again.</string>
 
   <string name="symbol_not_found">"Symbol not found: %1$s"</string>
   <string name="add_stock_symbol">Add Stock Symbol</string>

@@ -105,8 +105,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 new RecyclerViewItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
-                        //TODO:
-                        // do something on item click
+                        try {
+                            Intent intent = new Intent(mContext, StockDetailsActivity.class);
+                            mCursor.moveToPosition(position);
+                            intent.putExtra("symbol", mCursor.getString(mCursor.getColumnIndex("symbol")));
+                            mContext.startActivity(intent);
+                        } catch (Exception e) {
+                            errorkToast();
+                        }
                     }
                 }));
         recyclerView.setAdapter(mCursorAdapter);
@@ -218,6 +224,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     public void networkToast() {
         Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_SHORT).show();
+    }
+
+    public void errorkToast() {
+        Toast.makeText(mContext, getString(R.string.error), Toast.LENGTH_SHORT).show();
     }
 
     public void restoreActionBar() {

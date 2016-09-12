@@ -3,6 +3,7 @@ package com.redgeckotech.stockhawk.rest;
 import android.content.ContentProviderOperation;
 import android.util.Log;
 
+import com.redgeckotech.stockhawk.data.HistoricalQuoteColumns;
 import com.redgeckotech.stockhawk.data.QuoteColumns;
 import com.redgeckotech.stockhawk.data.QuoteProvider;
 
@@ -24,7 +25,7 @@ public class Utils {
 
     public static boolean showPercent = true;
 
-    public static ArrayList quoteJsonToContentVals(String JSON) throws SymbolNotFoundException {
+    public static ArrayList<ContentProviderOperation> quoteJsonToContentVals(String JSON) throws SymbolNotFoundException {
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
@@ -114,4 +115,20 @@ public class Utils {
         }
         return builder.build();
     }
+
+    public static ContentProviderOperation buildHistoricalBatchOperation(JSONObject jsonObject) {
+        ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
+                QuoteProvider.HistoricalQuotes.CONTENT_URI);
+        try {
+            builder.withValue(HistoricalQuoteColumns.SYMBOL, jsonObject.getString("symbol"));
+            builder.withValue(HistoricalQuoteColumns.DATE, jsonObject.getString("date"));
+            builder.withValue(HistoricalQuoteColumns.CLOSE, truncateBidPrice(jsonObject.getString("Close")));
+            builder.withValue(HistoricalQuoteColumns.ISCURRENT, 1);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return builder.build();
+    }
+
 }

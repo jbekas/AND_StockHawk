@@ -3,9 +3,11 @@ package com.redgeckotech.stockhawk.dagger;
 import android.content.Context;
 
 import com.redgeckotech.stockhawk.StockHawkApplication;
+import com.redgeckotech.stockhawk.service.HistoricalStockTaskService;
 import com.redgeckotech.stockhawk.service.StockIntentService;
 import com.redgeckotech.stockhawk.service.StockTaskService;
 import com.redgeckotech.stockhawk.ui.MyStocksActivity;
+import com.redgeckotech.stockhawk.ui.StockDetailsActivity;
 
 import javax.inject.Singleton;
 
@@ -17,6 +19,9 @@ public interface AppComponent {
     void inject(StockHawkApplication application);
 
     void inject(MyStocksActivity activity);
+    void inject(StockDetailsActivity activity);
+
+    void inject(HistoricalStockTaskService service);
     void inject(StockIntentService service);
     void inject(StockTaskService service);
 
