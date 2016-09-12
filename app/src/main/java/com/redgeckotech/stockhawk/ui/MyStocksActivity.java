@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -73,6 +74,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private MenuItem changeUnitsMenuItem;
 
     private RecyclerView recyclerView;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fab;
     private TextView networkNotAvailable;
 
@@ -85,7 +87,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
         setContentView(R.layout.activity_my_stocks);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Timber.d("onRefresh");
+                init();
+            }
+        });
 
         mCursorAdapter = new QuoteCursorAdapter(this, null);
         recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
@@ -171,9 +182,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             mServiceIntent = new Intent(this, StockIntentService.class);
         }
 
-        checkNetworkStatus();
-        initStockIntentService();
-        updateUI();
+        init();
 
         if (isConnected) {
             long period = 3600L;
@@ -222,6 +231,12 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    public void init() {
+        checkNetworkStatus();
+        initStockIntentService();
+        updateUI();
+    }
+
     public void checkNetworkStatus() {
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -245,22 +260,18 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
                 serviceIntentInitialized = true;
             }
-        } else {
-            networkToast();
         }
     }
 
     public void updateUI() {
-        if (mCursor == null || mCursor.getCount() == 0) {
-            if (!isConnected) {
-                recyclerView.setVisibility(View.GONE);
-                fab.setVisibility(View.GONE);
-                networkNotAvailable.setVisibility(View.VISIBLE);
-                return;
-            }
+        swipeRefreshLayout.setRefreshing(false);
+
+        if (!isConnected) {
+            fab.setVisibility(View.GONE);
+            networkNotAvailable.setVisibility(View.VISIBLE);
+            return;
         }
 
-        recyclerView.setVisibility(View.VISIBLE);
         fab.setVisibility(View.VISIBLE);
         networkNotAvailable.setVisibility(View.GONE);
     }
@@ -330,9 +341,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mCursorAdapter.swapCursor(data);
         mCursor = data;
 
-        checkNetworkStatus();
-        initStockIntentService();
-        updateUI();
+        init();
     }
 
     @Override

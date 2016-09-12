@@ -9,22 +9,32 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
         <TextView
             android:id="@+id/network_not_available"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/please_check_your_network_settings_and_try_again"
-            android:textSize="16sp"
-            android:padding="32dp"
+            android:layout_alignParentTop="true"
             android:gravity="center"
-            tools:text="@string/please_check_your_network_settings_and_try_again"
-            android:visibility="gone"/>
+            android:padding="32dp"
+            android:text="@string/please_check_your_network_settings_and_try_again"
+            android:textColor="@color/material_red_700"
+            android:textSize="16sp"
+            android:visibility="gone"
+            tools:text="@string/please_check_your_network_settings_and_try_again"/>
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignWithParentIfMissing="true"
+            android:layout_below="@id/network_not_available">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </android.support.v4.widget.SwipeRefreshLayout>
+
     </RelativeLayout>
 
     <com.melnykov.fab.FloatingActionButton
